@@ -30,7 +30,10 @@ jobs:
     steps:
     - name: Environment variables
       run: |
+        echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
         env
+        
+
     - name: Checkout
       uses: actions/checkout@v2
 
