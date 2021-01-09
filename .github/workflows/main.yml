@@ -1,0 +1,88 @@
+#
+# To configure this workflow:
+#
+# 1. Ensure that your repository contains the necessary configuration for your Google Kubernetes Engine cluster, including deployment.yml, kustomization.yml, service.yml, etc.
+#
+# 2. Set up secrets in your workspace: GKE_PROJECT with the name of the project, GKE_EMAIL with the service account email, GKE_KEY with the Base64 encoded JSON service account key (https://github.com/GoogleCloudPlatform/github-actions/tree/docs/service-account-key/setup-gcloud#inputs).
+#
+# 3. Change the values for the GKE_ZONE, GKE_CLUSTER, IMAGE, REGISTRY_HOSTNAME and DEPLOYMENT_NAME environment variables (below).
+
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches: 
+      - '*'
+  pull_request:
+    branches: [ master ]
+
+# Environment variables available to all jobs and steps in this workflow
+env:
+  GKE_PROJECT: otters-cc
+  GKE_EMAIL: ${{ secrets.GKE_EMAIL }}
+  GITHUB_SHA: ${{ github.sha }}
+  GKE_ZONE: europe-west1-c
+  GKE_CLUSTER: cluster-1
+  REGISTRY_HOSTNAME: gcr.io
+  DEPLOYMENT_NAME: gke-test
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Export SERVICE_NAME
+      run: |
+        echo "::set-env name=SHA8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+        echo "::set-env name=SERVICE_NAME::${GITHUB_REPOSITORY##*/}"
+        echo "::set-env name=NAMESPACE::${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}"
+        echo "::set-env name=BUILD_IMAGE::$REGISTRY_HOSTNAME/$GKE_PROJECT/${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}:$GITHUB_SHA"
+ 
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Tests
+      run: python3 tests.py
+
+    - name: Env
+      run: |
+        env
+        sudo apt-get install gettext
+        cat k8s/deployment.yaml | envsubst
+
+    # Setup gcloud CLI
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '270.0.0'
+        service_account_email: ${{ secrets.GKE_EMAIL }}
+        service_account_key: ${{ secrets.GKE_KEY }}
+
+    # Configure docker to use the gcloud command-line tool as a credential helper
+    - run: |
+        # Set up docker to authenticate
+        # via gcloud command-line tool.
+        gcloud auth configure-docker
+      
+    # Build the Docker image
+    - name: Build
+      run: |        
+        docker build -t $BUILD_IMAGE \
+          --build-arg GITHUB_SHA="$GITHUB_SHA" \
+          --build-arg GITHUB_REF="$GITHUB_REF" .
+    # Push the Docker image to Google Container Registry
+    - name: Publish
+      run: |
+        docker push $BUILD_IMAGE
+        
+    # Deploy the Docker image to the GKE cluster
+    - name: Deploy
+      run: |
+        gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GKE_PROJECT
+        cat k8s/namespace.yaml | envsubst
+        cat k8s/namespace.yaml | envsubst | kubectl apply -f -
+        cat k8s/deployment.yaml | envsubst
+        cat k8s/deployment.yaml | envsubst | kubectl apply -n $NAMESPACE -f -
+        cat k8s/service.yaml | envsubst
+        cat k8s/service.yaml | envsubst | kubectl apply -n $NAMESPACE -f -
+        kubectl rollout status deployment/$SERVICE_NAME -n $NAMESPACE

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: environment-variables
+data:
+  THIS_SERVICE: "{{CF_REPO_NAME}}"
+  BRANCH: "{{CF_BRANCH_TAG_NORMALIZED}}"
