@@ -30,10 +30,10 @@ jobs:
 
     - name: Environment variables
       run: |
-        echo "$(echo ${GITHUB_SHA}" | cut -c1-8) >> $SHORT_SHA
-        echo "${GITHUB_REPOSITORY##*/}" >> $SERVICE_NAME
-        echo "${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}" >> $NAMESPACE
-        echo "$REGISTRY_HOSTNAME/$GKE_PROJECT/${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}:$GITHUB_SHA" >> $NAMESPACE
+        echo "SHORT_SHA=$(echo ${GITHUB_SHA}" | cut -c1-8)" >> $GITHUB_ENV
+        echo "SERVICE_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
+        echo "NAMESPACE=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}" >> $GITHUB_ENV
+        echo "BUILD_IMAGE=$REGISTRY_HOSTNAME/$GKE_PROJECT/${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}:$GITHUB_SHA" >> $GITHUB_ENV
 
         # echo "::set-env name=SHA8::$(echo ${GITHUB_SHA} | cut -c1-8)"
         # echo "::set-env name=SERVICE_NAME::${GITHUB_REPOSITORY##*/}"
