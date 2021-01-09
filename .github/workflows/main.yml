@@ -31,6 +31,7 @@ jobs:
     - name: Environment variables
       run: |
         echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+        echo "SERVICE_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
         env
         
 
