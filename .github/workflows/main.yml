@@ -87,9 +87,11 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |
-        gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GKE_PROJECT
+        echo KUBE_CONFIG | base64 -D > kubeconfig
+        export KUBECONFIG=kubeconfig
+        kubectl get nodes
         cat k8s/namespace.yaml | envsubst
-        cat k8s/namespace.yaml | envsubst | kubectl apply -f -
+        cat k8s/namespace.yaml | envsubst | kubectl apply -f - 
         cat k8s/deployment.yaml | envsubst
         cat k8s/deployment.yaml | envsubst | kubectl apply -n $NAMESPACE -f -
         cat k8s/service.yaml | envsubst
