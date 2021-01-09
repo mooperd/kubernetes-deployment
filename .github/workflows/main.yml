@@ -95,7 +95,7 @@ jobs:
         cat k8s/namespace.yaml | envsubst
         cat k8s/namespace.yaml | envsubst | kubectl apply -f - 
         cat k8s/configmap.yaml | envsubst
-        cat k8s/configmap.yaml | envsubst | kubectl apply -f - 
+        cat k8s/configmap.yaml | envsubst | kubectl apply -n $NAMESPACE -f - 
         cat k8s/deployment.yaml | envsubst
         cat k8s/deployment.yaml | envsubst | kubectl apply -n $NAMESPACE -f -
         cat k8s/service.yaml | envsubst
