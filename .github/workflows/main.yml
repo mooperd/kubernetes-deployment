@@ -27,13 +27,12 @@ jobs:
     name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
     steps:
-
     - name: Environment variables
       run: |
         echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
         echo "SERVICE_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
         echo "NAMESPACE=${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}" >> $GITHUB_ENV
-        echo "BUILD_IMAGE=$REGISTRY_HOSTNAME/${{ secrets.GCP_SA_KEY }}/${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}:$GITHUB_SHA" >> $GITHUB_ENV
+        echo "BUILD_IMAGE=$REGISTRY_HOSTNAME/${{ secrets.GCP_PROJECT_ID }}/${GITHUB_REPOSITORY##*/}-${GITHUB_REF##*/}:$GITHUB_SHA" >> $GITHUB_ENV
 
         # echo "::set-env name=SHA8::$(echo ${GITHUB_SHA} | cut -c1-8)"
         # echo "::set-env name=SERVICE_NAME::${GITHUB_REPOSITORY##*/}"
