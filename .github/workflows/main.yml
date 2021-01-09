@@ -18,11 +18,7 @@ on:
 
 # Environment variables available to all jobs and steps in this workflow
 env:
-  GKE_PROJECT: otters-cc
-  GKE_EMAIL: ${{ secrets.GKE_EMAIL }}
   GITHUB_SHA: ${{ github.sha }}
-  GKE_ZONE: europe-west1-c
-  GKE_CLUSTER: cluster-1
   REGISTRY_HOSTNAME: gcr.io
   DEPLOYMENT_NAME: gke-test
 
@@ -42,21 +38,21 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Tests
-      run: python3 tests.py
-
     - name: Env
       run: |
         env
         sudo apt-get install gettext
         cat k8s/deployment.yaml | envsubst
 
-    # Setup gcloud CLI
-    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@master
       with:
-        version: '270.0.0'
-        service_account_email: ${{ secrets.GKE_EMAIL }}
-        service_account_key: ${{ secrets.GKE_KEY }}
+        project_id: ${{ secrets.GCP_PROJECT_ID }}
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
+
+    - name: Use gcloud CLI
+      run: gcloud info
 
     # Configure docker to use the gcloud command-line tool as a credential helper
     - run: |
