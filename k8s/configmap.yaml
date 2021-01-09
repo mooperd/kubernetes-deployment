@@ -3,5 +3,5 @@ kind: ConfigMap
 metadata:
   name: environment-variables
 data:
-  THIS_SERVICE: "{{CF_REPO_NAME}}"
-  BRANCH: "{{CF_BRANCH_TAG_NORMALIZED}}"
+  THIS_SERVICE: $SERVICE_NAME
+  BRANCH: $NAMESPACE
