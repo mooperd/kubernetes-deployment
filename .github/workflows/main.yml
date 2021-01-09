@@ -21,6 +21,7 @@ env:
   GITHUB_SHA: ${{ github.sha }}
   REGISTRY_HOSTNAME: gcr.io
   DEPLOYMENT_NAME: gke-test
+  GCP_PROJECT_ID: otters-cc
 
 jobs:
   setup-build-publish-deploy:
@@ -33,7 +34,7 @@ jobs:
         echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
         echo "SERVICE_NAME=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
         echo "NAMESPACE=${GITHUB_REPOSITORY##*/}" >> $GITHUB_ENV
-        # echo "BUILD_IMAGE=$REGISTRY_HOSTNAME/${{ secrets.GCP_PROJECT_ID }}/${GITHUB_REPOSITORY##*/}:$GITHUB_SHA" >> $GITHUB_ENV
+        # echo "BUILD_IMAGE=$REGISTRY_HOSTNAME/${{ secrets.GCP_PROJECT_ID }}/${GITHUB_REPOSITORY##*/}:$SHORT_SHA" >> $GITHUB_ENV
 
  
     - name: Checkout
