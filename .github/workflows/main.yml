@@ -87,7 +87,7 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |
-        echo KUBE_CONFIG | base64 -d > kubeconfig
+        echo ${{ secrets.KUBE_CONFIG }} | base64 -d > kubeconfig
         export KUBECONFIG=kubeconfig
         kubectl get nodes
         cat k8s/namespace.yaml | envsubst
