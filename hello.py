@@ -1,15 +1,22 @@
 import os
+import math
 from flask import Flask
+from flask import jsonify
 app = Flask(__name__)
 
 @app.route("/")
 def hello():
     if 'THIS_SERVICE' in os.environ:
-        return_string = "Hello World. This is service <b>{0}</b> built from branch <b>{1}</b>"\
-        .format(os.environ['THIS_SERVICE'], os.environ['BRANCH'])
+        return_dict = {}
+        return_dict["service"] = os.environ['THIS_SERVICE']
+        return_dict["git branch"] = os.environ['BRANCH']
+        math_dict = {}
+        for i in range(10000):
+            math_dict[i] = math.sqrt(i)
+        return_dict["math"] = math_dict
     else:
-        return_string = "Hello World" 
-    return return_string 
+        return_dict = {"message": "Hello World"}
+    return jsonify(return_dict)
 
 @app.route("/healthz")
 def healthz():
