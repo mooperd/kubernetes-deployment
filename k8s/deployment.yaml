@@ -6,7 +6,7 @@ metadata:
   labels:
     app: $SERVICE_NAME
 spec:
-  replicas: 1
+  replicas: 10
   revisionHistoryLimit: 5
   selector:
     matchLabels:
