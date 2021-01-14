@@ -1,6 +1,18 @@
 #!/bin/bash
-# This script needs bash4 or above
+####  This script needs bash4 or above. Dependencies require Python3  ####
 # You can use https://cert-manager.io/ for managing certs on K8s clusters but I (andrew) think its massively overcomplicated and fragile.
+
+### Dependancies ###
+#  Bash 4
+#  Python3 
+#  jq
+#  kubectl 
+#  pip3 install certbot certbot-dns-route53 awscli
+
+### Copying certificates between namespaces ###
+# There used to be an "--export" flag in kubectl which made this much easier but they depriciated it.
+# jq is used to strip out some metadata
+# kubectl get secret wildcard-devops-wizard-com -o json | jq 'del(.metadata["namespace","creationTimestamp","resourceVersion","selfLink","uid"])' | kubectl apply -n master -f -
 
 # TLD is Top level domain e.g. 'wtf.com'
 if [[ ! -v 'TLD' ]]; then
@@ -26,23 +38,28 @@ fi
 mkdir -p $TLD
 
 # create fake cert if --fake flag is passed.
-if [[ $* == *--fake ]]; then	
+if [[ $* == *--fake ]]; then
+# Make a directory where we can put out Certs.
+DIR=$TLD-fake
+mkdir -p $DIR
 certbot certonly \
       --test-cert \
       --dns-route53 -d *.$TLD \
-      --config-dir ~/$TLD \
-      --work-dir ~/$TLD \
-      --logs-dir ~/$TLD \
+      --config-dir ~/$DIR \
+      --work-dir ~/$DIR \
+      --logs-dir ~/$DIR \
       -m andrew.holway@guest.hpi.de \
       --agree-tos -n 
 
 # create real cert if --real flag is passed.
 elif [[ $* == *--real ]]; then
+DIR=$TLD-real
+mkdir -p $DIR
 certbot certonly \
       --dns-route53 -d *.$TLD \
-      --config-dir ~/$TLD \
-      --work-dir ~/$TLD \
-      --logs-dir ~/$TLD \
+      --config-dir ~/$DIR \
+      --work-dir ~/$DIR \
+      --logs-dir ~/$DIR \
       -m andrew.holway@guest.hpi.de \
       --agree-tos -n 
 else
@@ -50,8 +67,10 @@ echo "You need to choose between a fake or real ssl cert. Please pass --fake or 
 exit 1
 fi
 
-# Put our certs into our namespace
+# Put our certs into our namespace. 
 kubectl create secret tls wildcard-${TLD/./-} \
-      --key ~/$TLD/live/$TLD/privkey.pem \
-      --cert ~/$TLD/live/$TLD/fullchain.pem \
+      --key ~/$DIR/live/$TLD/privkey.pem \
+      --cert ~/$DIR/live/$TLD/fullchain.pem \
       -n $NAMESPACE
+
+
