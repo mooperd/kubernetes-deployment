@@ -11,7 +11,7 @@ def hello():
         return_dict["service"] = os.environ['THIS_SERVICE']
         return_dict["git branch"] = os.environ['BRANCH']
         math_dict = {}
-        for i in range(10000):
+        for i in range(2):
             math_dict[i] = math.sqrt(i)
         return_dict["math"] = math_dict
     else:
