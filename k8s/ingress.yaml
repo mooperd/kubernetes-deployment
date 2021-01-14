@@ -12,7 +12,7 @@ items:
     tls:
     - hosts:
       - $HOSTNAME
-      secretName: wildcard-${TLD/./-}
+      secretName: $CERT_NAME
     rules:
     - host: $HOSTNAME
       http:
