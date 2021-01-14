@@ -21,7 +21,7 @@ env:
   GITHUB_SHA: ${{ github.sha }}
   REGISTRY_HOSTNAME: gcr.io
   DEPLOYMENT_NAME: gke-test
-  STAGING_DOMAIN: devops-wizard.com
+  TLD: devops-wizard.com
   # GCP_PROJECT_ID: otters-cc
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
         export NAMESPACE=${GITHUB_REF##*/}
         export SERVICE_NAME=${GITHUB_REPOSITORY##*/}
         export BUILD_IMAGE=$REGISTRY_HOSTNAME/${{ secrets.GCP_PROJECT_ID }}/$SERVICE_NAME:$SHORT_SHA
-        export HOSTNAME=$NAMESPACE.$STAGING_DOMAIN
+        export HOSTNAME=$NAMESPACE.$TLD
 
         echo "SHORT_SHA=$SHORT_SHA"
         echo "SERVICE_NAME=$SERVICE_NAME"
