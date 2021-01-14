@@ -10,9 +10,13 @@
 #  pip3 install certbot certbot-dns-route53 awscli
 
 ### Copying certificates between namespaces ###
+# This command wants to run in your deployment somewhere. It expects the certs to be in the default namespace.
 # There used to be an "--export" flag in kubectl which made this much easier but they depriciated it.
 # jq is used to strip out some metadata
 # kubectl get secret wildcard-devops-wizard-com -o json | jq 'del(.metadata["namespace","creationTimestamp","resourceVersion","selfLink","uid"])' | kubectl apply -n master -f -
+
+# Find out where the script is running
+SCRIPT_DIR=$(dirname "$0")
 
 # TLD is Top level domain e.g. 'wtf.com'
 if [[ ! -v 'TLD' ]]; then
@@ -40,26 +44,26 @@ mkdir -p $TLD
 # create fake cert if --fake flag is passed.
 if [[ $* == *--fake ]]; then
 # Make a directory where we can put out Certs.
-DIR=$TLD-fake
+DIR=$SCRIPT_DIR/$TLD-fake
 mkdir -p $DIR
 certbot certonly \
       --test-cert \
       --dns-route53 -d *.$TLD \
-      --config-dir ~/$DIR \
-      --work-dir ~/$DIR \
-      --logs-dir ~/$DIR \
+      --config-dir $DIR \
+      --work-dir $DIR \
+      --logs-dir $DIR \
       -m andrew.holway@guest.hpi.de \
       --agree-tos -n 
 
 # create real cert if --real flag is passed.
 elif [[ $* == *--real ]]; then
-DIR=$TLD-real
+DIR=$SCRIPT_DIR/$TLD-real
 mkdir -p $DIR
 certbot certonly \
       --dns-route53 -d *.$TLD \
-      --config-dir ~/$DIR \
-      --work-dir ~/$DIR \
-      --logs-dir ~/$DIR \
+      --config-dir $DIR \
+      --work-dir $DIR \
+      --logs-dir $DIR \
       -m andrew.holway@guest.hpi.de \
       --agree-tos -n 
 else
@@ -69,8 +73,8 @@ fi
 
 # Put our certs into our namespace. 
 kubectl create secret tls wildcard-${TLD/./-} \
-      --key ~/$DIR/live/$TLD/privkey.pem \
-      --cert ~/$DIR/live/$TLD/fullchain.pem \
+      --key $DIR/live/$TLD/privkey.pem \
+      --cert $DIR/live/$TLD/fullchain.pem \
       -n $NAMESPACE
 
 
