@@ -19,7 +19,7 @@ on:
 # Environment variables available to all jobs and steps in this workflow
 env:
   GITHUB_SHA: ${{ github.sha }}
-  REGISTRY_HOSTNAME: gcr.io
+  REGISTRY_HOSTNAME: m-v-d.com
   DEPLOYMENT_NAME: gke-test
   TLD: devops-wizard.com
   # GCP_PROJECT_ID: otters-cc
