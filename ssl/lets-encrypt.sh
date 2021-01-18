@@ -75,6 +75,7 @@ fi
 kubectl create secret tls wildcard-${TLD/./-} \
       --key $DIR/live/$TLD/privkey.pem \
       --cert $DIR/live/$TLD/fullchain.pem \
+      --save-config \
       -n $NAMESPACE
 
 
