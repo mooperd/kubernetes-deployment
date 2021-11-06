@@ -92,7 +92,7 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |
-        gcloud container clusters get-credentials cluster-1 --zone europe-central2-a --project $GCP_PROJECT_ID
+        gcloud container clusters get-credentials cluster-1 --zone europe-central2-a --project ${{ secrets.GCP_PROJECT_ID }}
         kubectl get nodes
         cat k8s/namespace.yaml | envsubst
         cat k8s/namespace.yaml | envsubst | kubectl apply -f - 
