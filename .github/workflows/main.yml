@@ -92,8 +92,7 @@ jobs:
     # Deploy the Docker image to the GKE cluster
     - name: Deploy
       run: |
-        echo ${{ secrets.KUBE_CONFIG }} | base64 -d > kubeconfig
-        export KUBECONFIG=kubeconfig
+        gcloud container clusters get-credentials cluster-1 --zone europe-central2-a --project $GCP_PROJECT_ID
         kubectl get nodes
         cat k8s/namespace.yaml | envsubst
         cat k8s/namespace.yaml | envsubst | kubectl apply -f - 
@@ -106,8 +105,8 @@ jobs:
         cat k8s/ingress.yaml | envsubst
         cat k8s/ingress.yaml | envsubst | kubectl apply -n $NAMESPACE -f -
         # Horrible hacky cludge to copy ssl certs from default namespace
-        kubectl get secret $CERT_NAME -o json \
-        | jq 'del(.metadata["namespace","creationTimestamp","resourceVersion","selfLink","uid"])' \
-        | kubectl apply -n $NAMESPACE -f -
+        # kubectl get secret $CERT_NAME -o json \
+        # | jq 'del(.metadata["namespace","creationTimestamp","resourceVersion","selfLink","uid"])' \
+        # | kubectl apply -n $NAMESPACE -f -
 
         kubectl rollout status deployment/$SERVICE_NAME -n $NAMESPACE
