@@ -84,6 +84,7 @@ jobs:
         docker build -t $BUILD_IMAGE \
           --build-arg GITHUB_SHA="$GITHUB_SHA" \
           --build-arg GITHUB_REF="$GITHUB_REF" .
+
     # Push the Docker image to Google Container Registry
     - name: Publish
       run: |
@@ -93,7 +94,6 @@ jobs:
     - name: Deploy
       run: |
         gcloud container clusters get-credentials cluster-1 --zone europe-central2-a --project ${{ secrets.GCP_PROJECT_ID }}
-        kubectl get nodes
         cat k8s/namespace.yaml | envsubst
         cat k8s/namespace.yaml | envsubst | kubectl apply -f - 
         cat k8s/configmap.yaml | envsubst
@@ -104,9 +104,4 @@ jobs:
         cat k8s/service.yaml | envsubst | kubectl apply -n $NAMESPACE -f -
         cat k8s/ingress.yaml | envsubst
         cat k8s/ingress.yaml | envsubst | kubectl apply -n $NAMESPACE -f -
-        # Horrible hacky cludge to copy ssl certs from default namespace
-        # kubectl get secret $CERT_NAME -o json \
-        # | jq 'del(.metadata["namespace","creationTimestamp","resourceVersion","selfLink","uid"])' \
-        # | kubectl apply -n $NAMESPACE -f -
-
         kubectl rollout status deployment/$SERVICE_NAME -n $NAMESPACE
